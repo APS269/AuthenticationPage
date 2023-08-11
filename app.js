@@ -3,6 +3,10 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const app = express();
 const mongoose = require("mongoose");
+
+//Here encryption is required in order to implement level 2 Authentication
+const encrypt = require("mongoose-encryption");
+
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 
@@ -17,10 +21,15 @@ app.get("/",(req,res)=>
 })
 mongoose.connect("mongodb://127.0.0.1:27017/userDB", { useNewUrlParser: true });
 
-const userSchema = {
+//object from mongoose schema class
+const userSchema = new mongoose.Schema({
     email: String,
     password: String
-};
+});
+
+const secret = "Thisisourlittlesecret";
+
+userSchema.plugin(encrypt, { secret: secret, encryptedFields:["password"] });
 
 const User = new mongoose.model("User",userSchema);
 
