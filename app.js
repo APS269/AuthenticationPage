@@ -6,8 +6,7 @@ const ejs = require("ejs");
 const app = express();
 const mongoose = require("mongoose");
 
-//Here encryption is required in order to implement level 2 Authentication
-const encrypt = require("mongoose-encryption");
+const md5 = require("md5");
 
 app.use(express.static("public"));
 app.set("view engine", "ejs");
@@ -30,9 +29,6 @@ const userSchema = new mongoose.Schema({
 });
 
 
-
-userSchema.plugin(encrypt, { secret: process.env.SECRET, encryptedFields:["password"] });
-
 const User = new mongoose.model("User",userSchema);
 
 
@@ -48,7 +44,7 @@ app.post("/register", (req,res) =>
 {
     const newUser = new User({
         email: req.body.username,
-        password:req.body.password
+        password: md5(req.body.password)
     })
     newUser.save()
         .then(() =>res.render("secrets"))
@@ -57,7 +53,7 @@ app.post("/register", (req,res) =>
 
 app.post("/login", (req, res) => {
     const username = req.body.username;
-    const password = req.body.password;
+    const password = md5(req.body.password);
 
     User.findOne({
         email: username
